@@ -1,5 +1,3 @@
-console.log('hello from chart_app.js');
-
 // data
 var timeParse = d3.timeParse('%Y-%m-%d %H');
 d3.json('data/hourly.json').then(function(data) {
@@ -65,40 +63,74 @@ function init_chart (dataset) {
 		.attr('class', 'y axis')
 		.call(y_axis);
 
+    var lines = [];
+    for (var hour=0; hour<24; hour++) {
+        var line = d3.line()
+            .x(function(d) { return x(d.datetime); })
+            .y(function(d) { return y(d.total); });
 
-	// line
-	var line = d3.line()
-		.x(function(d) { return x(d.datetime); })
-		.y(function(d) { return y(d.total); });
+        var ds = _.filter(dataset, (d) => {
+            return (d.hour == hour && d.datetime.getDay() == 1);// && d.datetime.getDay() != 6);
+        });
+        svg.append('path')
+            .datum(ds)
+            .attr('class', `line line${hour}`)
+            .attr('d', line)
+            .attr('clip-path', 'url(#clip)')
+            .attr('stroke', d3.interpolateRainbow(((hour + 4)%24)/24));
+        lines.push({
+            line: line,
+            class: `line${hour}`,
+        });
+    }
 
-	svg.append('path')
-		.datum(dataset) // 10. Binds data to the line 
-		.attr('class', 'line') // Assign a class for styling 
-		.attr('d', line) // 11. Calls the line generator 
-		.attr('clip-path', 'url(#clip)');
+    var highlighted_line = 0;
+    svg.append('text')
+        .attr('class', 'chart-title')
+        .attr('x', (margin.left / 2))             
+        .attr('y', (margin.top / 2) - 10)
+        .attr('text-anchor', 'left')  
+        .style('font-size', '16px') 
+        .text(`hour ${highlighted_line}`);
+
+    setInterval(() => {
+        highlighted_line++; 
+
+        d3.select(`.line${(highlighted_line - 1)%24}`)
+        .transition().duration(150)
+        .style('stroke-width', '1px');
+
+        d3.select(`.line${highlighted_line%24}`)
+        .style('stroke-width', '4px');
+
+        d3.select(`.chart-title`)
+        .transition().duration(150)
+        .text(`hour ${highlighted_line % 24}`);
+
+    }, 300);
 
 
-	var zoom = d3.zoom().on('zoom', zoomed);
-	d3.select('svg').call(zoom);
+	//var zoom = d3.zoom().on('zoom', zoomed);
+	//d3.select('svg').call(zoom);
 
-	function zoomed () {
-		// Update Scales
-		let new_x = d3.event.transform.rescaleX(x);
+	//function zoomed () {
+	//	// Update Scales
+	//	let new_x = d3.event.transform.rescaleX(x);
 
-		svg.select('.x.axis')
-			.transition().duration(50)
-			.call(x_axis.scale(new_x));
+	//	svg.select('.x.axis')
+	//		.transition().duration(50)
+	//		.call(x_axis.scale(new_x));
 
-		// re-draw line
-		plotLine = d3.line()
-			.x(function (d) {
-				return new_x(d.datetime);
-			})
-			.y(function (d) {
-				return y(d.total);
-			});
-		d3.select('.line')
-			.transition().duration(50)
-			.attr('d', plotLine);
-	}
+	//	// re-draw line
+	//	plotLine = d3.line()
+	//		.x(function (d) {
+	//			return new_x(d.datetime);
+	//		})
+	//		.y(function (d) {
+	//			return y(d.total);
+	//		});
+	//	d3.select('.line')
+	//		.transition().duration(50)
+	//		.attr('d', plotLine);
+	//}
 }
