@@ -70,13 +70,15 @@ function init_chart (dataset) {
             .y(function(d) { return y(d.total); });
 
         var ds = _.filter(dataset, (d) => {
-            return (d.hour == hour && d.datetime.getDay() == 1);// && d.datetime.getDay() != 6);
+            //return (d.hour == hour && d.datetime.getDay() == 1);// && d.datetime.getDay() != 6);
+            return (d.hour == hour);
         });
         svg.append('path')
             .datum(ds)
             .attr('class', `line line${hour}`)
             .attr('d', line)
             .attr('clip-path', 'url(#clip)')
+			.attr('opacity', '0.4')
             .attr('stroke', d3.interpolateRainbow(((hour + 4)%24)/24));
         lines.push({
             line: line,
@@ -84,29 +86,57 @@ function init_chart (dataset) {
         });
     }
 
+
+	var hour_legend_boxes = _.map(_.range(0, 24), (hour) => {
+		return {
+			hour: hour,
+			fill: d3.interpolateRainbow(((hour + 4)%24)/24),
+			x: x.range()[1] * (hour / 24),
+			y: 10,
+			width: 15,
+			height: 15,
+			opacity: 0.3,
+			rx: 2,
+			ry: 2,
+			time: new Date(`January 1, 2019 ${hour}:00:00`),
+			time_format: d3.timeFormat('%H:%M %p'),
+		};
+	});
+
+	console.log(svg.selectAll('text'));
+	var legend = svg.selectAll('text')
+							  .data(hour_legend_boxes)
+							  .enter()
+							  .append('text');
+
+	var legend_attribs = legend
+	    .attr('x', function (d) { return d.x; })
+	    .attr('y', function (d) { return d.y; })
+	    //.attr('width', function (d) { return d.width; })
+	    //.attr('height', function (d) { return d.height; })
+	    //.attr('rx', function (d) { return d.rx; })
+	    //.attr('ry', function (d) { return d.ry; })
+		.attr('opacity', function (d) { return d.opacity; })
+	    .attr('fill', function(d) { return d.fill; })
+		.text(function (d) { 
+			console.log(d.time_format(d.time));
+			return d.time_format(d.time);
+		 })
+
+
     var highlighted_line = 0;
-    svg.append('text')
-        .attr('class', 'chart-title')
-        .attr('x', (margin.left / 2))             
-        .attr('y', (margin.top / 2) - 10)
-        .attr('text-anchor', 'left')  
-        .style('font-size', '16px') 
-        .text(`hour ${highlighted_line}`);
 
     setInterval(() => {
         highlighted_line++; 
 
         d3.select(`.line${(highlighted_line - 1)%24}`)
-        .transition().duration(150)
-        .style('stroke-width', '1px');
+        //.transition().duration(150)
+        .style('stroke-width', '1px')
+        .style('opacity', '0.4');
 
-        d3.select(`.line${highlighted_line%24}`)
-        .style('stroke-width', '4px');
-
-        d3.select(`.chart-title`)
-        .transition().duration(150)
-        .text(`hour ${highlighted_line % 24}`);
-
+		d3.select(`.line${highlighted_line%24}`)
+		.style('stroke-width', '4px')
+		.style('opacity', '1');
     }, 300);
 
 
