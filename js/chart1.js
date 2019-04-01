@@ -45,7 +45,8 @@ function init_chart (dataset) {
 	var y = d3.scaleLinear().range([height, 0]);
 
 	x.domain(d3.extent(dataset, function (d) { return d.datetime; }));
-	y.domain(d3.extent(dataset, function (d) { return d.total; }));
+	y.domain([0, d3.max(dataset, function (d) { return d.total; })]).nice();
+
 
 	var x_axis = d3.axisBottom()
 		.scale(x)
@@ -76,13 +77,51 @@ function init_chart (dataset) {
         .attr('opacity', '1')
         .attr('stroke', 'rgb(80,80,255)')
 
+    // show max and min
+    var max_point = _.maxBy(dataset, (d) => {
+        return d.total;
+    });
+    var min_point = _.minBy(dataset, (d) => {
+        return d.total;
+    });
 
-	var zoom = d3.zoom().on('zoom', zoomed);
+    var dt_format = 'MMMM Do, h a';
+    $('#max-emitted-hour').text(`${max_point.total.toLocaleString()} tC on ${moment(max_point.datetime).format(dt_format)}`);
+    $('#min-emitted-hour').text(`${min_point.total.toLocaleString()} tC on ${moment(min_point.datetime).format(dt_format)}`);
+
+	svg.selectAll('circle')
+		.data([max_point, min_point]).enter()
+		.append('circle')
+        .attr('clip-path', 'url(#clip)')
+		.attr('cx', function (d) { return x(d.datetime); })
+		.attr('cy', function (d) { return y(d.total); })
+		.attr('r', '6px')
+		.attr('stroke', function (d) { return d.total > 200000 ? 'red' : 'green'; })
+		.attr('stroke-width', '2px')
+		.attr('fill', 'none');
+
+
+	// handle zooming
+	var zoom = d3.zoom()
+		.scaleExtent([1, 50])
+		.translateExtent([
+			[ x.range()[0], x.range()[1] ],
+			[ x.range()[1], y.range()[0] ],
+		])
+		.on('zoom', zoomed);
+
 	d3.select('svg').call(zoom);
 
 	function zoomed () {
+		var t = d3.event.transform;
+
+		t.x = d3.min([t.x, 0]);
+		t.y = d3.min([t.y, 0]);
+		t.x = d3.max([t.x, (1-t.k) * width]);
+		t.y = d3.max([t.y, (1-t.k) * height]);
+
 		// Update Scales
-		let new_x = d3.event.transform.rescaleX(x);
+		let new_x = t.rescaleX(x);
 
 		svg.select('.x.axis')
 			//.transition().duration(50)
@@ -99,5 +138,9 @@ function init_chart (dataset) {
 		d3.select('.line')
 			//.transition().duration(50)
 			.attr('d', plotLine);
+
+		// max point indicators
+		svg.selectAll('circle')
+			.attr('cx', function (d) { return new_x(d.datetime); });
 	}
 }
