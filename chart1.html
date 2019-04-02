@@ -16,16 +16,28 @@ body {
 path {
 	fill: none;
 }
+.discussion {
+	width: 600px;
+	text-align: left;
+}
+.chart-link {
+	cursor: pointer;
+}
 </style>
 </head>
 <body>
 	<div id="body">
-	<div> 
-		<p>Here is a graph of the total carbon emissions for the contiguous United States, measured in metric tons per hour, for the year of 2015.</p>
-		</p>It was collected by the Vulcan Project, and can be downloaded <strong><a href="http://vulcan.rc.nau.edu/Data.html" target="_blank">here</a></strong>.</p>
-		<p>The <em style="color: red">most</em> carbon emitted in a single hour was <span id="max-emitted-hour">heh</span></p>
-		<p>The <em style="color: green">least</em> carbon emitted in a single hour was <span id="min-emitted-hour">heh</span></p>
-		<p>zoom and pan the chart below to explore the data</p>
+	<div class="discussion"> 
+		<h2 class="section-header">United States Carbon Emissions</h2>
+		<p>
+			Here is a graph of the total carbon emissions for the contiguous United States, measured in metric tons per hour, for the year of 2015.
+			It was collected by the Vulcan Project, and can be downloaded <strong><a href="http://vulcan.rc.nau.edu/Data.html" target="_blank">here</a></strong>.
+		</p>
+		<p>
+			The <em>most</em> carbon emitted in a single hour was <span class="chart-link" id="max-emitted-hour" style="color: red; font-weight: bold;">heh</span>.
+			The <em>least</em> carbon emitted in a single hour was <span class="chart-link" id="min-emitted-hour" style="color: green; font-weight: bold;">heh</span>.
+			Zoom (mouse wheel) and pan (drag) the chart below to explore the data.
+		</p>
 	</div>
 	<script type="text/javascript" src="js/chart1.js"></script>
 	<script type="text/javascript" src="js/live.js"></script>

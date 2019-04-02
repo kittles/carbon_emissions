@@ -17,7 +17,7 @@ function init_chart (dataset) {
 		top: 50, 
 		right: 50, 
 		bottom: 50, 
-		left: 50,
+		left: 80,
 	};
 	var width = body.innerWidth() - margin.left - margin.right;
 	var height = 400 - margin.top - margin.bottom;
@@ -51,7 +51,6 @@ function init_chart (dataset) {
 	var x_axis = d3.axisBottom()
 		.scale(x)
 		.ticks(10);
-		//.tickFormat(d3.timeFormat('%Y-%m-%d %H'));
 
 	var y_axis = d3.axisLeft()
 		.scale(y)
@@ -64,6 +63,17 @@ function init_chart (dataset) {
 	svg.append('g')
 		.attr('class', 'y axis')
 		.call(y_axis);
+
+	// text label for the y axis
+	svg.append('text')
+      .attr('transform', 'rotate(-90)')
+      .attr('y', 0 - margin.left)
+      .attr('x',0 - (height / 2))
+      .attr('dy', '1em')
+      .style('text-anchor', 'middle')
+	  .style('font-size', '11px')
+	  .style('font-family', 'Helvetica Neue, Helvetica')
+      .text('metric tons of carbon (tC)');      
 
     var line = d3.line()
         .x(function(d) { return x(d.datetime); })
@@ -97,6 +107,7 @@ function init_chart (dataset) {
 		.attr('cy', function (d) { return y(d.total); })
 		.attr('r', '6px')
 		.attr('stroke', function (d) { return d.total > 200000 ? 'red' : 'green'; })
+		.attr('class', function (d) { return d.total > 200000 ? 'maxpoint' : 'minpoint'; })
 		.attr('stroke-width', '2px')
 		.attr('fill', 'none');
 
@@ -114,15 +125,14 @@ function init_chart (dataset) {
 
 	function zoomed () {
 		var t = d3.event.transform;
-
 		t.x = d3.min([t.x, 0]);
 		t.y = d3.min([t.y, 0]);
 		t.x = d3.max([t.x, (1-t.k) * width]);
 		t.y = d3.max([t.y, (1-t.k) * height]);
-
-		// Update Scales
 		let new_x = t.rescaleX(x);
-
+		rescale_x_axis(new_x, 0);
+	}
+	function rescale_x_axis (new_x, duration) {
 		svg.select('.x.axis')
 			//.transition().duration(50)
 			.call(x_axis.scale(new_x));
@@ -136,11 +146,24 @@ function init_chart (dataset) {
 				return y(d.total);
 			});
 		d3.select('.line')
-			//.transition().duration(50)
+			.transition().duration(duration)
 			.attr('d', plotLine);
 
 		// max point indicators
 		svg.selectAll('circle')
+			.transition().duration(duration)
 			.attr('cx', function (d) { return new_x(d.datetime); });
 	}
+	$('#max-emitted-hour').on('mouseenter', () => {
+		d3.select('.maxpoint').transition().duration(250).attr('r', '12px');
+	});
+	$('#max-emitted-hour').on('mouseleave', () => {
+		d3.select('.maxpoint').transition().duration(250).attr('r', '6px');
+	});
+	$('#min-emitted-hour').on('mouseenter', () => {
+		d3.select('.minpoint').transition().duration(250).attr('r', '12px');
+	});
+	$('#min-emitted-hour').on('mouseleave', () => {
+		d3.select('.minpoint').transition().duration(250).attr('r', '6px');
+	});
 }
