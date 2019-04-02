@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/d3.v5.min.js"></script>
+<script src="js/lodash.min.js"></script>
+<script src="js/moment.min.js"></script>
+<link type="text/css" rel="stylesheet" href="css/style.css"/>
+<style type="text/css">
+/* Style the lines by removing the fill and applying a stroke */
+body {
+	margin: 20px;
+	text-align: center;
+}
+path {
+	fill: none;
+}
+.discussion {
+	width: 600px;
+	text-align: left;
+}
+.chart-link {
+	cursor: pointer;
+}
+</style>
+</head>
+<body>
+	<div id="body">
+	<div class="discussion"> 
+		<h2 class="section-header">Emissions by Weekday</h2>
+		<p>
+            The daily total chart still suffers from the troughs of weekends. This shows only the daily total emissions for weekdays.
+			The <em>most</em> carbon emitted in a single day was <span class="chart-link" id="max-emitted-hour" style="color: red; font-weight: bold;">heh</span>.
+			The <em>least</em> carbon emitted in a single day was <span class="chart-link" id="min-emitted-hour" style="color: green; font-weight: bold;">heh</span>.
+			Zoom (mouse wheel) and pan (drag) the chart below to explore the data.
+		</p>
+	</div>
+	<script type="text/javascript" src="js/chart3.js"></script>
+	<script type="text/javascript" src="js/live.js"></script>
+</body>
+</html>
+

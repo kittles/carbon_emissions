@@ -39,6 +39,17 @@ function init_chart (dataset) {
 		.attr('width', width)
 		.attr('height', height);
 
+    // get the daily total rather than by hour
+    var groups =_.groupBy(dataset, (d) => {
+        return moment(d.datetime).format('MMMM Do YYYY')
+    })
+    dataset = _.map(groups, (grp) => {
+        var point = grp[0];
+        point.total = _.sumBy(grp, 'total'); 
+        return point;
+    })
+    console.log(dataset);
+
 	// axes
 
 	var x = d3.scaleTime().range([0, width]);
@@ -73,7 +84,7 @@ function init_chart (dataset) {
       .style('text-anchor', 'middle')
 	  .style('font-size', '11px')
 	  .style('font-family', 'Helvetica Neue, Helvetica')
-      .text('metric tons of carbon (tC) emitted per hour');      
+      .text('metric tons of carbon (tC) emitted per day');      
 
     var line = d3.line()
         .x(function(d) { return x(d.datetime); })
@@ -95,7 +106,7 @@ function init_chart (dataset) {
         return d.total;
     });
 
-    var dt_format = 'MMMM Do, h a';
+    var dt_format = 'MMMM Do';
     $('#max-emitted-hour').text(`${max_point.total.toLocaleString()} tC on ${moment(max_point.datetime).format(dt_format)}`);
     $('#min-emitted-hour').text(`${min_point.total.toLocaleString()} tC on ${moment(min_point.datetime).format(dt_format)}`);
 
@@ -106,8 +117,8 @@ function init_chart (dataset) {
 		.attr('cx', function (d) { return x(d.datetime); })
 		.attr('cy', function (d) { return y(d.total); })
 		.attr('r', '6px')
-		.attr('stroke', function (d) { return d.total > 200000 ? 'red' : 'green'; })
-		.attr('class', function (d) { return d.total > 200000 ? 'maxpoint' : 'minpoint'; })
+		.attr('stroke', function (d) { return d.total > 4000000 ? 'red' : 'green'; })
+		.attr('class', function (d) { return d.total > 4000000 ? 'maxpoint' : 'minpoint'; })
 		.attr('stroke-width', '2px')
 		.attr('fill', 'none');
 
