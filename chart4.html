@@ -27,6 +27,21 @@ path {
   stroke: none;
   fill: steelblue;
 }
+/*
+.bar:hover {
+  fill: rgb(29, 77, 155);
+}
+*/
+div.tooltip {   
+    position: absolute;         
+    text-align: center;         
+    height: 28px;                   
+    padding: 2px;               
+    background: rgba(255,255,255,0.5);
+    border-left: 1px solid rgba(0,0,0,0.5);
+    font: 12px sans-serif;      
+    pointer-events: none;           
+}
 </style>
 </head>
 <body>
@@ -34,8 +49,8 @@ path {
 	<div class="discussion"> 
 		<h2 class="section-header">Emissions by Day</h2>
 		<p>
-            This is a chart of daily emissions, using bars instead of a line. There is a clear drop every saturday and sunday.
-			Zoom (mouse wheel) and pan (drag) the chart below to explore the data.
+            This is a chart of daily emissions, using bars instead of a line. There is a clear drop every Saturday and Sunday.
+			Zoom (mouse wheel) and pan (drag) the chart below to explore the data. Mousing over a bar will show that day's total emissions in a tooltip.
 		</p>
 	</div>
 	<script type="text/javascript" src="js/chart4.js"></script>

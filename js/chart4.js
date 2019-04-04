@@ -2,7 +2,8 @@
 var timeParse = d3.timeParse('%Y-%m-%d %H');
 d3.json('data/hourly.json').then(function(data) {
 	var dataset = _.map(data.data, (obj) => {
-		obj.datetime = timeParse(obj.datetime);
+        obj.dt_string = obj.datetime;
+		obj.datetime = d3.timeDay.offset(timeParse(obj.datetime), -1);
 		obj.image_url = 'img/' + obj.img;
 		return obj;
 	});
@@ -12,7 +13,6 @@ d3.json('data/hourly.json').then(function(data) {
 // chart
 function init_chart (dataset) {
     var body = $('body');
-    console.log(body);
 	var margin = {
 		top: 50, 
 		right: 50, 
@@ -40,12 +40,11 @@ function init_chart (dataset) {
 		.attr('height', height);
 
     // get the daily total rather than by hour
-    var groups =_.groupBy(dataset, (d) => {
-        return moment(d.datetime).format('MMMM Do YYYY')
-    })
+    var groups =_.groupBy(dataset, 'day');
     dataset = _.map(groups, (grp) => {
         var point = grp[0];
         point.total = _.sumBy(grp, 'total'); 
+        point.grp = grp;
         return point;
     })
     //dataset = _.filter(dataset, (d) => {
@@ -56,7 +55,7 @@ function init_chart (dataset) {
 	var x = d3.scaleTime().range([0, width]);
 	var y = d3.scaleLinear().range([height, 0]);
 
-	x.domain(d3.extent(_.map(dataset, 'datetime')));
+	x.domain(d3.extent(_.map(dataset, 'datetime').concat([new Date('2014-12-31'), new Date('2016-01-02')])));
 	y.domain([0, d3.max(dataset, function (d) { return d.total; })]).nice();
 
 
@@ -99,9 +98,12 @@ function init_chart (dataset) {
     //    .attr('opacity', '1')
     //    .attr('stroke', 'rgb(80,80,255)')
 
-    function bar_width () {
-        return x(new Date('2015-01-02')) - x(new Date('2015-01-01')) - 0.8;
-    }
+    var div = d3.select('body').append('div')   
+        .attr('class', 'tooltip')               
+        .style('font-size', '11px')
+        .style('opacity', 0);
+
+
 
     var pad = 1;
     var bars = svg.selectAll('.bar')
@@ -109,8 +111,12 @@ function init_chart (dataset) {
         .enter()
         .append('rect')
         .attr('class', 'bar')
-        .attr('clip-path', 'url(#clip)')
-        .attr('width', bar_width)
+        .attr('clip-path', 'url(#clip)');
+    function do_bars (bars, x) {
+        function bar_width () {
+            return x(new Date('2015-01-02')) - x(new Date('2015-01-01')) - 0.8;
+        }
+        bars.attr('width', bar_width)
         .attr('height', function(d) {
             return height - y(d.total);
         })
@@ -120,6 +126,26 @@ function init_chart (dataset) {
         .attr('y', function(d) {
             return y(d.total);
         })
+        .style('fill', 'steelblue')
+        .on('mouseover', function(d) {      
+            d3.select(this).style('fill', 'rgb(29, 77, 155)');
+            div.transition().duration(50)      
+            //.style('position', 'relative')      
+            .style('opacity', .9);      
+
+            div.html(moment(d.datetime).format(' ddd, MMM Do') + '<br/>'  + d.total.toLocaleString() + ' tC')  
+            // TODO should constrain this to the chart area...
+            .style('left', (x(d.datetime) - (bar_width() / 2) + 100) + 'px')
+            .style('top', '155px');    
+        })                  
+        .on('mouseout', function(d) {       
+            d3.select(this).style('fill', 'steelblue');
+            div.transition().duration(50)      
+            .style('opacity', 0);   
+        });
+    }
+    do_bars(bars, x)
+
 
 
     ////
@@ -141,18 +167,18 @@ function init_chart (dataset) {
 
 
 	// handle zooming
-    // TODO add a point on either end of the dates so bars arent clipped
 	var zoom = d3.zoom()
 		.scaleExtent([1, 50])
-		.translateExtent([
-			[ x.range()[0], x.range()[1] ],
-			[ x.range()[1], y.range()[0] ],
-		])
+		//.translateExtent([
+		//	[ x.range()[0], y.range()[1] ],
+		//	[ x.range()[1], y.range()[0] ],
+		//])
 		.on('zoom', zoomed);
 
 	d3.select('svg').call(zoom);
 
 	function zoomed () {
+        div.style('opacity', 0);
 		var t = d3.event.transform;
 		t.x = d3.min([t.x, 0]);
 		t.y = d3.min([t.y, 0]);
@@ -166,18 +192,8 @@ function init_chart (dataset) {
 			//.transition().duration(50)
 			.call(x_axis.scale(new_x));
 
-        function bar_width () {
-            return new_x(new Date('2015-01-02')) - new_x(new Date('2015-01-01')) - 0.8;
-        }
-
 		// re-draw line
-		svg.selectAll('.bar')
-            //.transition().duration(duration)
-            .attr('width', (d) => {
-                return new_x(new Date('2015-01-02')) - new_x(new Date('2015-01-01')) - 1;
-            })
-            .attr('x', function(d) {
-                return new_x(d.datetime) - (bar_width() / 2);
-            })
+        
+        do_bars(svg.selectAll('.bar'), new_x);
 	}
 }
