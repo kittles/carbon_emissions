@@ -6,11 +6,6 @@ body {
   text-align: center;
 }
 
-#chart, #header, #footer {
-  position: absolute;
-  top: 550px;
-}
-
 #header, #footer {
   z-index: 1;
   display: block;

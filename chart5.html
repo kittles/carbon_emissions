@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/d3.v5.min.js"></script>
+<script src="js/lodash.min.js"></script>
+<script src="js/moment.min.js"></script>
+<link type="text/css" rel="stylesheet" href="css/style.css"/>
+<style type="text/css">
+/* Style the lines by removing the fill and applying a stroke */
+body {
+	margin: 20px;
+	text-align: center;
+}
+path {
+	fill: none;
+}
+.discussion {
+	width: 600px;
+	text-align: left;
+}
+.chart-link {
+	cursor: pointer;
+}
+.bar {
+  stroke: none;
+}
+/*
+.bar:hover {
+  fill: rgb(29, 77, 155);
+}
+*/
+div.tooltip {   
+    position: absolute;         
+    text-align: center;         
+    height: 28px;                   
+    padding: 2px;               
+    background: rgba(255,255,255,0.5);
+    border-left: 1px solid rgba(0,0,0,0.5);
+    font: 12px sans-serif;      
+    pointer-events: none;           
+}
+div.tooltip-stem {   
+    position: absolute;         
+    pointer-events: none;           
+}
+#chart {
+	position: relative;
+}
+#chart-controls {
+	text-align: left;
+}
+</style>
+</head>
+<body>
+	<div class="discussion"> 
+		<h2 class="section-header">Emissions by Day</h2>
+		<p>
+            This is a chart of daily emissions for the contiguous United States. There is a clear drop every Saturday and Sunday.
+			Zoom (mouse wheel) and pan (drag) the chart below to explore the data. Hovering over a bar will show that day's total emissions in a tooltip above the bar.
+		</p>
+		<p>
+			Use the three buttons below to isolate weekdays or weekend days only. Some days have totals
+			that seem to break the weekly pattern. Can you figure out why?
+		</p>
+	</div>
+	<div id="chart-controls">
+		show:
+		<button id="show-all">all</button>
+		<button id="show-week">weekday</button>
+		<button id="show-weekend">weekend</button>
+	</div>
+	<div id="chart"></div>
+	<script type="text/javascript" src="js/chart5.js"></script>
+	<script type="text/javascript" src="js/live.js"></script>
+</body>
+</html>
+
